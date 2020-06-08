@@ -1,0 +1,22 @@
+import re
+import string
+
+def counting_words():
+    frequency = {} # To store the word and its corresponding word count
+    file_obj = open('Corona.txt', 'r') #Any text file can be replaced
+    word_content = file_obj.read().lower() # Turning all the words in our text file into lowercase so same words are not taken to be different.
+
+    reg_exp = re.findall(r'\b[a-z]{3,15}\b', word_content)
+
+    for word in reg_exp:
+        count = frequency.get(word, 0) # Count the frequency for a word present in the article.
+        frequency[word] = count + 1 # Increment the count for each occurrence of the particular word
+    
+    freq_list = frequency.keys()
+    
+    for word in freq_list:
+        print (word, frequency[word])
+
+
+if __name__ == '__main__':
+    counting_words()
