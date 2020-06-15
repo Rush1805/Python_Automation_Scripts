@@ -1,0 +1,79 @@
+import requests
+import bs4
+from bs4 import BeautifulSoup
+import pandas as pd
+import time
+import os
+
+os. getcwd()
+os.chdir("C:\\Users\\Nextaff-User\\Desktop\\") #Put any file path where you want the excel file of Indeed jobs to be saved
+def url_list():
+    job_position=input("Enter the job position:- ")
+    #print(job_position)
+    job_location=input("Enter the job location:- ")
+    #print(job_location)
+    URL = "https://www.indeed.com/jobs?q="+"+".join(job_position.split())+"&l="+"+".join(job_location.split())
+    #print(type(URL))
+    #print("Basic URL:- ", URL)
+    URL_list=[]
+    i=['','&start=10','&start=20','&start=30','&start=40','&start=50','&start=60','&start=70','&start=80','&start=90','&start=100','&start=110','&start=120','&start=130','&start=140','&start=150','&start=160','&start=170','&start=180','&start=190',]
+    for x in i:
+        URL_list.append(URL+x) 
+    #print("URL_list:- ", URL_list)
+    temp="Please wait while we're fetching data of "+ job_position +" jobs located in " + job_location +" from Indeed.com"
+    print("\033[1;31;47m"+temp)
+    return URL_list
+
+def parse(url_list):
+    df = pd.DataFrame(columns=["Title","Location","Company","Salary", "Synopsis"])
+    Title_1=[]
+    Location_1=[]
+    Company_1=[]
+    Salary_1=[]
+    Synopsis_1=[]
+    for url in url_list:
+        html = requests.get(url)
+        soup = BeautifulSoup(html.content, 'html.parser', from_encoding="utf-8")   
+        moreJobs=soup.find_all(class_= "result" )
+        for each in moreJobs:
+            try: 
+                title = each.find(class_='jobtitle').text.replace('\n', '')
+                Title_1.append(title)
+            except:
+                title = 'None'
+            try:
+                location = each.find('span', {'class':"location" }).text.replace('\n', '')
+                Location_1.append(location)
+            except:
+                location = 'None'
+            try: 
+                company = each.find(class_='company').text.replace('\n', '')
+                Company_1.append(company)
+            except:
+                company = 'None'
+            try:
+                salary = each.find('span', {'class':'no-wrap'}).text.replace('\n', '')
+                Salary_1.append(salary)
+            except:
+                salary = 'None'
+            try:
+                synopsis=each.find('div', {'class':'summary'}).text.replace('\n', '')
+            except:
+                synopsis = 'None'
+           
+            df = df.append({'Title':title, 'Location':location, 'Company':company, 'Salary':salary, 'Synopsis':synopsis}, ignore_index=True)
+    #print("Data frame",df)
+    return df
+    
+    
+    def excel(dataframe):
+    writer = pd.ExcelWriter('Indeed_Jobs_List.xlsx') # create excel writer object
+    Excel=dataframe.to_excel(writer) # write dataframe to excel
+    writer.save() # save the excel
+    print("\033[1;32;47m Your Indeed search has been written successfully to an Excel File on your Destop !!!")
+    return Excel
+
+#Driver code
+list_of_different_pages=url_list()
+Jobs_df=parse(list_of_different_pages)
+excel(Jobs_df)
